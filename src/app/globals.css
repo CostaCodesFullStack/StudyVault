@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body { @apply bg-white text-zinc-900 antialiased dark:bg-zinc-950 dark:text-zinc-100; font-family: ui-sans-serif, system-ui, sans-serif; }
+  main { @apply mx-auto max-w-4xl space-y-4 p-4 md:p-8; }
+  h1 { @apply text-2xl font-semibold tracking-tight; }
+  h2 { @apply mt-6 text-lg font-medium; }
+  a { @apply text-indigo-600 hover:underline dark:text-indigo-400; }
+  ul { @apply space-y-1; }
+  label { @apply text-sm; }
+  input, select, textarea { @apply mb-2 mr-2 rounded-md border border-zinc-300 bg-transparent px-3 py-1.5 text-sm dark:border-zinc-700; }
+  input[type="checkbox"] { @apply px-0 py-0; }
+  textarea { @apply block w-full max-w-xl; }
+  button { @apply mr-2 rounded-md bg-indigo-600 px-3 py-1.5 text-sm text-white hover:bg-indigo-500 disabled:opacity-50; }
+  iframe { @apply rounded-md border border-zinc-200 dark:border-zinc-800; }
+  [role="toolbar"] { @apply flex flex-wrap items-center gap-2; }
+  [role="toolbar"] input { @apply mb-0 mr-0; }
+  [role="alert"] { @apply text-sm text-red-600 dark:text-red-400; }
+  :focus-visible { @apply outline outline-2 outline-offset-2 outline-indigo-500; }
+}
