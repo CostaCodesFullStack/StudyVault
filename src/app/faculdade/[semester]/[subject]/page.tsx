@@ -31,6 +31,9 @@ export default async function SubjectPage({
       units: {
         orderBy: { number: "asc" },
         include: {
+          documents: {
+            where: { userId },
+          },
           lessons: {
             orderBy: { number: "asc" },
             include: {
@@ -190,7 +193,7 @@ export default async function SubjectPage({
           <div className="mb-4">
             <h2>Nova aula</h2>
             <p className="muted mt-1">
-              Crie a estrutura da aula antes de enviar o PDF correspondente.
+              As aulas são apenas a estrutura. O PDF completo da unidade é enviado separadamente.
             </p>
           </div>
 
@@ -229,10 +232,14 @@ export default async function SubjectPage({
       <UploadForm
         category="UNIVERSITY"
         subjectId={subject.id}
+        units={subject.units.map((unit) => ({
+          id: unit.id,
+          label: `Unidade ${unit.number} — ${unit.title}`,
+        }))}
         lessons={subject.units.flatMap((unit) =>
           unit.lessons.map((lesson) => ({
             id: lesson.id,
-            label: `${unit.title} / ${lesson.code}`,
+            label: `Unidade ${unit.number} / ${lesson.code} — ${lesson.title}`,
           }))
         )}
       />
@@ -291,6 +298,30 @@ export default async function SubjectPage({
                     ]}
                   />
                 </div>
+              </div>
+
+              <div className="border-b border-zinc-100 p-5 dark:border-zinc-800">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Material completo da unidade</p>
+                    <p className="muted mt-1">O PDF principal desta unidade fica separado das aulas.</p>
+                  </div>
+                  {unit.documents.length === 0 ? (
+                    <span className="tag">Nenhum PDF</span>
+                  ) : (
+                    unit.documents.map((document) => (
+                      <div key={document.id} className="flex min-w-0 items-center gap-2">
+                        <a href={`/reader/${document.id}`} className="max-w-xs truncate font-medium no-underline">{document.title}</a>
+                        <DeleteDocumentButton documentId={document.id} title={document.title} />
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              <div className="border-b border-zinc-100 px-5 py-4 dark:border-zinc-800">
+                <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Aulas</p>
+                <p className="muted mt-1">Os PDFs específicos de cada aula aparecem dentro da respectiva aula.</p>
               </div>
 
               <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
