@@ -188,49 +188,6 @@ export default async function SubjectPage({
         </form>
       </section>
 
-      {subject.units.length > 0 && (
-        <section className="card mb-6 p-5">
-          <div className="mb-4">
-            <h2>Nova aula</h2>
-            <p className="muted mt-1">
-              As aulas são apenas a estrutura. O PDF completo da unidade é enviado separadamente.
-            </p>
-          </div>
-
-          <form action={createLesson} className="grid gap-3 sm:grid-cols-[1fr_120px_1fr_auto]">
-            <select name="unitId" aria-label="Unidade" required>
-              {subject.units.map((unit) => (
-                <option key={unit.id} value={unit.id}>
-                  {unit.title}
-                </option>
-              ))}
-            </select>
-
-            <input
-              name="number"
-              type="number"
-              min={1}
-              placeholder="Aula nº"
-              aria-label="Número da aula"
-              required
-            />
-
-            <input
-              name="title"
-              placeholder="Título da aula"
-              aria-label="Título da aula"
-              required
-            />
-
-            <button type="submit" className="btn btn-secondary">
-              Criar aula
-            </button>
-          </form>
-        </section>
-      )}
-
-
-
       <div className="mt-8 space-y-5">
         {subject.units.length === 0 ? (
           <div className="empty-state">
@@ -285,6 +242,34 @@ export default async function SubjectPage({
                     ]}
                   />
                 </div>
+              </div>
+
+              <div className="border-b border-zinc-100 p-5 dark:border-zinc-800">
+                <div className="mb-4 flex flex-col gap-1">
+                  <h3 className="font-semibold text-zinc-900 dark:text-zinc-100">Aulas da unidade</h3>
+                  <p className="muted">Crie as aulas diretamente dentro desta unidade.</p>
+                </div>
+
+                <form action={createLesson} className="grid gap-3 sm:grid-cols-[100px_1fr_auto]">
+                  <input type="hidden" name="unitId" value={unit.id} />
+                  <input
+                    name="number"
+                    type="number"
+                    min={1}
+                    placeholder="Aula nº"
+                    aria-label={`Número da aula da Unidade ${unit.number}`}
+                    required
+                  />
+                  <input
+                    name="title"
+                    placeholder="Título da aula"
+                    aria-label="Título da aula"
+                    required
+                  />
+                  <button type="submit" className="btn btn-secondary">
+                    Criar aula
+                  </button>
+                </form>
               </div>
 
               <div className="border-b border-zinc-100 p-5 dark:border-zinc-800">
