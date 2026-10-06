@@ -16,13 +16,14 @@ export default async function SemesterPage({ params }: P) {
   const { semester: slug } = await params;
   const semester = await db.semester.findUnique({ where: { userId_slug: { userId, slug } }, include: { subjects: { orderBy: { name: "asc" } } } });
   if (!semester) notFound();
+  const semesterId = semester.id;
 
   async function createSubject(fd: FormData) {
     "use server";
     const uid = await requireUserId();
     const parsed = z.object({ name: z.string().trim().min(1).max(100), description: z.string().trim().max(300).optional() }).safeParse(Object.fromEntries(fd));
     if (!parsed.success) return;
-    const own = await db.semester.findFirst({ where: { id: semester.id, userId: uid } });
+    const own = await db.semester.findFirst({ where: { id: semesterId, userId: uid } });
     if (!own) return;
     await db.subject.upsert({ where: { semesterId_slug: { semesterId: own.id, slug: slugify(parsed.data.name) } }, update: {}, create: { semesterId: own.id, slug: slugify(parsed.data.name), ...parsed.data } });
     revalidatePath(`/faculdade/${slug}`);
