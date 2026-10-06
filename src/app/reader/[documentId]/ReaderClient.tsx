@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { documentFileUrl } from "@/lib/storage/urls";
 
 type Note = { id: string; page: number; content: string };
-
 type Props = { id: string; title: string; total: number; initialPage: number; bookmarked: boolean; notes: Note[] };
 
 export function ReaderClient(p: Props) {
@@ -62,7 +61,7 @@ export function ReaderClient(p: Props) {
   return (
     <div className="space-y-5">
       <section className="card p-3 sm:p-4">
-        <div role="toolbar" aria-label="Controles do leitor" className="gap-2">
+        <div role="toolbar" aria-label="Controles do leitor" className="flex flex-wrap items-center gap-2">
           <button className="btn btn-secondary btn-sm" onClick={() => go(page - 1)} disabled={page <= 1 || busy}>Anterior</button>
           <div className="flex items-center gap-2">
             <label htmlFor="reader-page" className="sr-only">Página</label>
@@ -90,10 +89,7 @@ export function ReaderClient(p: Props) {
       {error && <p role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">{error}</p>}
 
       <section className="card p-5">
-        <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
-          <div><p className="eyebrow">Estudo</p><h2>Anotações</h2><p className="muted mt-1">Registre observações relacionadas à página atual.</p></div>
-          <span className="tag">Página {page}</span>
-        </div>
+        <div className="mb-4 flex flex-wrap items-end justify-between gap-3"><div><p className="eyebrow">Estudo</p><h2>Anotações</h2><p className="muted mt-1">Registre observações relacionadas à página atual.</p></div><span className="tag">Página {page}</span></div>
         <textarea aria-label="Nova anotação" value={text} onChange={(e) => setText(e.target.value)} maxLength={2000} placeholder="Escreva uma anotação..." />
         <div className="mt-3 flex justify-end"><button className="btn btn-primary" onClick={addNote} disabled={!text.trim() || busy}>Salvar anotação</button></div>
         {notes.length > 0 && <div className="mt-5 space-y-3">{notes.map((note) => <article key={note.id} className="rounded-xl border border-zinc-200 p-4 dark:border-zinc-800"><div className="flex items-start justify-between gap-4"><span className="tag">Página {note.page}</span><button className="btn btn-danger btn-sm" type="button" onClick={() => removeNote(note.id)}>Excluir</button></div><p className="mt-3 whitespace-pre-wrap text-sm text-zinc-700 dark:text-zinc-300">{note.content}</p></article>)}</div>}
