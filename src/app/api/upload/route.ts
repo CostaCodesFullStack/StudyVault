@@ -25,7 +25,7 @@ export async function POST(req: Request) {
     const unitInput = fd.get("unitId")?.toString();
     let unitId: string | null = null;
     let lessonId: string | null = null;
-    if (parsed && subjectId) {
+    if (parsed && subjectId && !unitInput) {
       const subject = await db.subject.findFirst({ where: { id: subjectId, semester: { userId } } });
       if (!subject) return NextResponse.json({ error: "Disciplina não encontrada." }, { status: 404 });
       const unit = await db.unit.upsert({ where: { subjectId_number: { subjectId, number: parsed.unit } }, update: {}, create: { subjectId, number: parsed.unit, title: `Unidade ${parsed.unit}` } });
