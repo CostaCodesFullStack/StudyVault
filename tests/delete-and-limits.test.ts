@@ -7,6 +7,7 @@ const mockDb = vi.hoisted(() => {
     document: { findFirst: vi.fn(), findMany: vi.fn(), deleteMany: vi.fn(), count: vi.fn() },
     note: { deleteMany: vi.fn() },
     semester: { findFirst: vi.fn(), deleteMany: vi.fn(), delete: vi.fn() },
+    unit: { findFirst: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
     pendingFileDeletion: {
       create: vi.fn(),
       createMany: vi.fn(),
@@ -21,7 +22,7 @@ const mockDb = vi.hoisted(() => {
 vi.mock("@/lib/db", () => ({ db: mockDb }));
 import { deleteDocument } from "../src/server/documents/delete";
 import { deleteNote } from "../src/server/notes/delete";
-import { deleteSemester } from "../src/server/university/delete";
+import { deleteSemester, deleteUnit } from "../src/server/university/delete";
 
 const storage = { upload: vi.fn(), read: vi.fn(), delete: vi.fn(), exists: vi.fn() };
 beforeEach(() => vi.clearAllMocks());
@@ -76,6 +77,25 @@ describe("deleteSemester", () => {
     expect(mockDb.semester.delete).toHaveBeenCalledWith({ where: { id: "s" } });
     expect(storage.delete).toHaveBeenCalledWith("A/one.pdf");
     expect(storage.delete).toHaveBeenCalledWith("A/two.pdf");
+  });
+
+
+  it("remove o PDF completo da unidade ao excluir a unidade", async () => {
+    mockDb.unit.findFirst.mockResolvedValue({ id: "u" });
+    mockDb.document.findMany.mockResolvedValue([{ id: "d1", storageKey: "A/unit.pdf" }]);
+    mockDb.document.deleteMany.mockResolvedValue({ count: 1 });
+    mockDb.unit.delete.mockResolvedValue({ id: "u" });
+
+    expect(await deleteUnit("u", "A", storage)).toBe("ok");
+
+    expect(mockDb.document.deleteMany).toHaveBeenCalledWith({
+      where: { id: { in: ["d1"] }, userId: "A" },
+    });
+    expect(mockDb.pendingFileDeletion.createMany).toHaveBeenCalledWith({
+      data: [{ storageKey: "A/unit.pdf" }],
+    });
+    expect(mockDb.unit.delete).toHaveBeenCalledWith({ where: { id: "u" } });
+    expect(storage.delete).toHaveBeenCalledWith("A/unit.pdf");
   });
 
   it("não exclui nada se o semestre não pertence ao usuário", async () => {
