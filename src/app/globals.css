@@ -3,20 +3,39 @@
 @tailwind utilities;
 
 @layer base {
-  body { @apply bg-white text-zinc-900 antialiased dark:bg-zinc-950 dark:text-zinc-100; font-family: ui-sans-serif, system-ui, sans-serif; }
-  main { @apply mx-auto max-w-4xl space-y-4 p-4 md:p-8; }
-  h1 { @apply text-2xl font-semibold tracking-tight; }
-  h2 { @apply mt-6 text-lg font-medium; }
-  a { @apply text-indigo-600 hover:underline dark:text-indigo-400; }
-  ul { @apply space-y-1; }
-  label { @apply text-sm; }
-  input, select, textarea { @apply mb-2 mr-2 rounded-md border border-zinc-300 bg-transparent px-3 py-1.5 text-sm dark:border-zinc-700; }
-  input[type="checkbox"] { @apply px-0 py-0; }
-  textarea { @apply block w-full max-w-xl; }
-  button { @apply mr-2 rounded-md bg-indigo-600 px-3 py-1.5 text-sm text-white hover:bg-indigo-500 disabled:opacity-50; }
-  iframe { @apply rounded-md border border-zinc-200 dark:border-zinc-800; }
+  html { color-scheme: light; }
+  html.dark { color-scheme: dark; }
+  body { @apply min-h-screen bg-zinc-50 text-zinc-900 antialiased dark:bg-zinc-950 dark:text-zinc-100; font-family: ui-sans-serif, system-ui, sans-serif; }
+  a { @apply text-indigo-600 transition-colors hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300; }
+  h1 { @apply text-3xl font-semibold tracking-tight text-zinc-950 dark:text-white; }
+  h2 { @apply text-lg font-semibold tracking-tight text-zinc-950 dark:text-white; }
+  input, select, textarea { @apply w-full rounded-xl border border-zinc-200 bg-white px-3.5 py-2.5 text-sm text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/10 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder:text-zinc-500; }
+  textarea { @apply min-h-28 resize-y; }
+  input[type="checkbox"] { @apply h-4 w-4 rounded-md p-0; }
+  button { @apply disabled:cursor-not-allowed disabled:opacity-50; }
+  :focus-visible { @apply outline-none ring-2 ring-indigo-500 ring-offset-2 ring-offset-zinc-50 dark:ring-offset-zinc-950; }
+}
+@layer components {
+  .page-shell { @apply mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8; }
+  .page-header { @apply mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between; }
+  .eyebrow { @apply mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-indigo-600 dark:text-indigo-400; }
+  .muted { @apply text-sm text-zinc-500 dark:text-zinc-400; }
+  .card { @apply rounded-2xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900; }
+  .card-hover { @apply transition duration-200 hover:-translate-y-0.5 hover:border-zinc-300 hover:shadow-md dark:hover:border-zinc-700; }
+  .btn { @apply inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-medium transition focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50; }
+  .btn-primary { @apply bg-indigo-600 text-white hover:bg-indigo-500; }
+  .btn-secondary { @apply border border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800; }
+  .btn-danger { @apply bg-red-50 text-red-700 hover:bg-red-100 dark:bg-red-950/40 dark:text-red-300 dark:hover:bg-red-950/70; }
+  .btn-sm { @apply px-3 py-2 text-xs; }
+  .nav-label { @apply mb-2 px-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-400; }
+  .nav-item { @apply flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-zinc-600 no-underline transition hover:bg-zinc-100 hover:text-zinc-950 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-white; }
+  .nav-item-active { @apply bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300; }
+  .nav-icon { @apply flex h-6 w-6 shrink-0 items-center justify-center text-sm; }
+  .brand-mark { @apply flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-600 text-sm font-bold text-white shadow-sm; }
+  .brand-mark-sm { @apply h-8 w-8 rounded-lg text-xs; }
+  .stat-card { @apply card p-5; }
+  .empty-state { @apply card flex min-h-48 flex-col items-center justify-center p-8 text-center; }
+  .tag { @apply inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300; }
+  .divider { @apply border-t border-zinc-100 dark:border-zinc-800; }
   [role="toolbar"] { @apply flex flex-wrap items-center gap-2; }
-  [role="toolbar"] input { @apply mb-0 mr-0; }
-  [role="alert"] { @apply text-sm text-red-600 dark:text-red-400; }
-  :focus-visible { @apply outline outline-2 outline-offset-2 outline-indigo-500; }
 }
