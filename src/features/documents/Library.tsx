@@ -7,9 +7,10 @@ import { CURSOR_SUBCATEGORIES, DEV_SUBCATEGORIES } from "@/lib/validation/upload
 export async function Library({ category, title }: { category: "DEVELOPMENT" | "CURSOR"; title: string }) {
   const userId = await requireUserId();
   const subs = category === "CURSOR" ? CURSOR_SUBCATEGORIES : DEV_SUBCATEGORIES;
+  const subcategoryNames: readonly string[] = subs;
   const docs = await db.document.findMany({ where: { userId, category }, orderBy: { createdAt: "desc" } });
   const grouped = subs.map((subcategory) => ({ subcategory, documents: docs.filter((document) => (document.subcategory ?? "Outros") === subcategory) })).filter((group) => group.documents.length > 0);
-  const uncategorized = docs.filter((document) => !subs.includes((document.subcategory ?? "Outros") as (typeof subs)[number]));
+  const uncategorized = docs.filter((document) => !subcategoryNames.includes(document.subcategory ?? "Outros"));
 
   return (
     <main className="page-shell">
