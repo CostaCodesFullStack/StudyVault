@@ -229,20 +229,7 @@ export default async function SubjectPage({
         </section>
       )}
 
-      <UploadForm
-        category="UNIVERSITY"
-        subjectId={subject.id}
-        units={subject.units.map((unit) => ({
-          id: unit.id,
-          label: `Unidade ${unit.number} — ${unit.title}`,
-        }))}
-        lessons={subject.units.flatMap((unit) =>
-          unit.lessons.map((lesson) => ({
-            id: lesson.id,
-            label: `Unidade ${unit.number} / ${lesson.code} — ${lesson.title}`,
-          }))
-        )}
-      />
+
 
       <div className="mt-8 space-y-5">
         {subject.units.length === 0 ? (
@@ -298,6 +285,17 @@ export default async function SubjectPage({
                     ]}
                   />
                 </div>
+              </div>
+
+              <div className="border-b border-zinc-100 p-5 dark:border-zinc-800">
+                <UploadForm
+                  category="UNIVERSITY"
+                  subjectId={subject.id}
+                  targetType="unit"
+                  targetId={unit.id}
+                  label="PDF completo da unidade"
+                  description="Adicione o material completo desta unidade."
+                />
               </div>
 
               <div className="border-b border-zinc-100 p-5 dark:border-zinc-800">
@@ -371,7 +369,16 @@ export default async function SubjectPage({
                       </div>
                     </div>
 
-                    <div className="mt-4 space-y-2">
+                    <div className="mt-4 space-y-3">
+                      <UploadForm
+                        category="UNIVERSITY"
+                        subjectId={subject.id}
+                        targetType="lesson"
+                        targetId={lesson.id}
+                        label="PDF da aula"
+                        description="Adicione o PDF específico desta aula."
+                      />
+                      <div className="space-y-2">
                       {lesson.documents.length === 0 ? (
                         <div className="rounded-xl border border-dashed border-zinc-200 px-4 py-5 text-center dark:border-zinc-700">
                           <p className="text-sm text-zinc-500 dark:text-zinc-400">
@@ -403,6 +410,7 @@ export default async function SubjectPage({
                           </div>
                         ))
                       )}
+                      </div>
                     </div>
                   </article>
                 ))}
