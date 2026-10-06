@@ -6,7 +6,7 @@ import { parseLessonFileName } from "@/lib/upload/parse-filename";
 import { PDFDocument } from "pdf-lib";
 import { uploadMetadataSchema, validatePdf } from "@/lib/validation/upload";
 
-/** multipart: file, category, title?, subjectId? (se o nome for U#A#, cria Unidade/Aula sob subjectId do usuário) */
+/** multipart: file, category, title?, subjectId?, unitId? ou lessonId? */
 export async function POST(req: Request) {
   const userId = await getUserId();
   if (!userId) return NextResponse.json({ error: "Não autenticado." }, { status: 401 });
@@ -22,6 +22,8 @@ export async function POST(req: Request) {
     try { pageCount = (await PDFDocument.load(buf, { ignoreEncryption: true })).getPageCount(); } catch { return NextResponse.json({ error: "PDF corrompido ou ilegível." }, { status: 400 }); }
     const parsed = parseLessonFileName(file.name);
     const subjectId = fd.get("subjectId")?.toString();
+    const unitInput = fd.get("unitId")?.toString();
+    let unitId: string | null = null;
     let lessonId: string | null = null;
     if (parsed && subjectId) {
       const subject = await db.subject.findFirst({ where: { id: subjectId, semester: { userId } } });
@@ -30,8 +32,15 @@ export async function POST(req: Request) {
       const lesson = await db.lesson.upsert({ where: { unitId_number: { unitId: unit.id, number: parsed.lesson } }, update: {}, create: { unitId: unit.id, number: parsed.lesson, code: parsed.code, title: parsed.code } });
       lessonId = lesson.id;
     }
+    if (unitInput) {
+      const unit = await db.unit.findFirst({ where: { id: unitInput, subject: { semester: { userId } } }, include: { documents: { select: { id: true } } } });
+      if (!unit) return NextResponse.json({ error: "Unidade não encontrada." }, { status: 404 });
+      if (unit.documents.length > 0) return NextResponse.json({ error: "Esta unidade já possui um PDF. Exclua o atual antes de enviar outro." }, { status: 409 });
+      unitId = unit.id;
+    }
+
     const lessonInput = fd.get("lessonId")?.toString();
-    if (!lessonId && lessonInput) {
+    if (!unitId && !lessonId && lessonInput) {
       const l = await db.lesson.findFirst({ where: { id: lessonInput, unit: { subject: { semester: { userId } } } } });
       if (!l) return NextResponse.json({ error: "Aula não encontrada." }, { status: 404 });
       lessonId = l.id;
@@ -40,7 +49,7 @@ export async function POST(req: Request) {
     if (!meta.success) return NextResponse.json({ error: "Metadados inválidos." }, { status: 400 });
 
     const { key } = await getStorage().upload({ userId, data: buf, contentType: "application/pdf" });
-    const doc = await db.document.create({ data: { userId, lessonId, category: meta.data.category, title: meta.data.title, subcategory: meta.data.subcategory ?? null, fileName: file.name, storageKey: key, mimeType: "application/pdf", fileSize: file.size, pageCount } }).catch(async (e: unknown) => { await getStorage().delete(key).catch(() => undefined); throw e; });
+    const doc = await db.document.create({ data: { userId, unitId, lessonId, category: meta.data.category, title: meta.data.title, subcategory: meta.data.subcategory ?? null, fileName: file.name, storageKey: key, mimeType: "application/pdf", fileSize: file.size, pageCount } }).catch(async (e: unknown) => { await getStorage().delete(key).catch(() => undefined); throw e; });
     return NextResponse.json({ id: doc.id }, { status: 201 });
   } catch (e) {
     console.error("upload failed", e);
