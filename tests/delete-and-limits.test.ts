@@ -4,10 +4,16 @@ import { documentFileUrl } from "../src/lib/storage/urls";
 
 const mockDb = vi.hoisted(() => {
   const m: Record<string, unknown> = {
-    document: { findFirst: vi.fn(), deleteMany: vi.fn(), count: vi.fn() },
+    document: { findFirst: vi.fn(), findMany: vi.fn(), deleteMany: vi.fn(), count: vi.fn() },
     note: { deleteMany: vi.fn() },
-    semester: { deleteMany: vi.fn() },
-    pendingFileDeletion: { create: vi.fn(), deleteMany: vi.fn().mockResolvedValue({ count: 1 }), updateMany: vi.fn().mockResolvedValue({ count: 1 }), findMany: vi.fn() },
+    semester: { findFirst: vi.fn(), deleteMany: vi.fn(), delete: vi.fn() },
+    pendingFileDeletion: {
+      create: vi.fn(),
+      createMany: vi.fn(),
+      deleteMany: vi.fn().mockResolvedValue({ count: 1 }),
+      updateMany: vi.fn().mockResolvedValue({ count: 1 }),
+      findMany: vi.fn(),
+    },
   };
   m.$transaction = (fn: (tx: unknown) => unknown) => fn(m);
   return m as never as Record<string, Record<string, ReturnType<typeof vi.fn>>>;
@@ -50,16 +56,35 @@ describe("deleteNote", () => {
 });
 
 describe("deleteSemester", () => {
-  it("bloqueia quando há documentos", async () => {
-    mockDb.document.count.mockResolvedValue(2);
-    expect(await deleteSemester("s", "A")).toBe("has_documents");
-    expect(mockDb.semester.deleteMany).not.toHaveBeenCalled();
+  it("remove os documentos do semestre e seus arquivos antes de concluir a exclusão", async () => {
+    mockDb.semester.findFirst.mockResolvedValue({ id: "s" });
+    mockDb.document.findMany.mockResolvedValue([
+      { id: "d1", storageKey: "A/one.pdf" },
+      { id: "d2", storageKey: "A/two.pdf" },
+    ]);
+    mockDb.document.deleteMany.mockResolvedValue({ count: 2 });
+    mockDb.semester.delete.mockResolvedValue({ id: "s" });
+
+    expect(await deleteSemester("s", "A", storage)).toBe("ok");
+
+    expect(mockDb.document.deleteMany).toHaveBeenCalledWith({
+      where: { id: { in: ["d1", "d2"] }, userId: "A" },
+    });
+    expect(mockDb.pendingFileDeletion.createMany).toHaveBeenCalledWith({
+      data: [{ storageKey: "A/one.pdf" }, { storageKey: "A/two.pdf" }],
+    });
+    expect(mockDb.semester.delete).toHaveBeenCalledWith({ where: { id: "s" } });
+    expect(storage.delete).toHaveBeenCalledWith("A/one.pdf");
+    expect(storage.delete).toHaveBeenCalledWith("A/two.pdf");
   });
-  it("escopa a exclusão por userId", async () => {
-    mockDb.document.count.mockResolvedValue(0);
-    mockDb.semester.deleteMany.mockResolvedValue({ count: 0 });
-    expect(await deleteSemester("s", "B")).toBe("not_found");
-    expect(mockDb.semester.deleteMany).toHaveBeenCalledWith({ where: { id: "s", userId: "B" } });
+
+  it("não exclui nada se o semestre não pertence ao usuário", async () => {
+    mockDb.semester.findFirst.mockResolvedValue(null);
+
+    expect(await deleteSemester("s", "B", storage)).toBe("not_found");
+    expect(mockDb.document.deleteMany).not.toHaveBeenCalled();
+    expect(mockDb.semester.delete).not.toHaveBeenCalled();
+    expect(storage.delete).not.toHaveBeenCalled();
   });
 });
 
